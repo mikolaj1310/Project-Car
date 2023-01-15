@@ -4,6 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+enum AccelerationType
+{
+    AT_AllWheelDrive,
+    AT_FrontWheelDrive,
+    AT_BackWheelDrive
+}
+
 struct Wheel
 {
     public GameObject m_WheelObject;
@@ -31,12 +38,15 @@ public class CarController : MonoBehaviour
     [SerializeField] [Range(0, 1)] private float m_TireGripFactor;
     [SerializeField] private float m_TireMass;
     [SerializeField] private float m_TurnRadious;
-    
-    [Header("Acceleration")]
+
+    [Header("Acceleration")] 
+    [SerializeField] private AccelerationType accelerationType;
     [SerializeField] private float m_CarTopSpeed;
     [SerializeField] private float m_Acceleration;
     [SerializeField] private AnimationCurve m_PowerCurve;
     [SerializeField] [Range(0, 1)] private float m_BreakingFactor;
+
+    [Header("Gearbox")] [SerializeField] private List<AnimationCurve> m_Gears;
 
     
     // Start is called before the first frame update
@@ -45,16 +55,34 @@ public class CarController : MonoBehaviour
         m_CarRigidbody = GetComponent<Rigidbody>();
         m_WheelFR.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelFR").gameObject;
         m_WheelFR.m_WheelModel = m_WheelFR.m_WheelObject.transform.Find("Model").gameObject;
-        m_WheelFR.m_GivePower = false;
         m_WheelFL.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelFL").gameObject;
         m_WheelFL.m_WheelModel = m_WheelFL.m_WheelObject.transform.Find("Model").gameObject;
-        m_WheelFL.m_GivePower = false;
         m_WheelBR.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelBR").gameObject;
         m_WheelBR.m_WheelModel = m_WheelBR.m_WheelObject.transform.Find("Model").gameObject;
-        m_WheelBR.m_GivePower = true;
         m_WheelBL.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelBL").gameObject;
         m_WheelBL.m_WheelModel = m_WheelBL.m_WheelObject.transform.Find("Model").gameObject;
-        m_WheelBL.m_GivePower = true;
+
+        switch (accelerationType)
+        {
+            case AccelerationType.AT_AllWheelDrive:
+                m_WheelFR.m_GivePower = true;
+                m_WheelFL.m_GivePower = true;
+                m_WheelBR.m_GivePower = true;
+                m_WheelBL.m_GivePower = true;
+                break;
+            case AccelerationType.AT_BackWheelDrive:
+                m_WheelFR.m_GivePower = false;
+                m_WheelFL.m_GivePower = false;
+                m_WheelBR.m_GivePower = true;
+                m_WheelBL.m_GivePower = true;
+                break;
+            case AccelerationType.AT_FrontWheelDrive:
+                m_WheelFR.m_GivePower = true;
+                m_WheelFL.m_GivePower = true;
+                m_WheelBR.m_GivePower = false;
+                m_WheelBL.m_GivePower = false;
+                break;
+        }
         
         m_Wheels.Add(m_WheelFR);
         m_Wheels.Add(m_WheelFL);
@@ -77,13 +105,6 @@ public class CarController : MonoBehaviour
         
         m_AccelInput = Input.GetAxisRaw("RightTrigger");
 
-        if (Input.GetButton("Reset"))
-        {
-            transform.position = m_StartTransform.position;
-            transform.rotation = m_StartTransform.rotation;
-            m_CarRigidbody.velocity = Vector3.zero;
-            m_CarRigidbody.rotation = Quaternion.identity;
-        }
         //if (Input.GetKey(KeyCode.W))
         //{
         //    m_AccelInput = 1f;
@@ -102,21 +123,20 @@ public class CarController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        bool carGrounded = false;
         foreach (var wheel in m_Wheels)
         {
             RaycastHit hit;
             var tireTransform = wheel.m_WheelObject.transform;
+            Vector3 rayOffset = new Vector3(0, 1, 0);
             //Suspension
             if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance))
             {
+                carGrounded = true;
                 Vector3 springDir = tireTransform.up;
                 Vector3 tireWorldVel = m_CarRigidbody.GetPointVelocity(tireTransform.position);
                 
                 float offset = m_SuspensionRestDistance - hit.distance;
-                //wheel.m_WheelModel.transform.SetPositionAndRotation(
-                //    new Vector3(wheel.m_WheelObject.transform.position.x, offset, wheel.m_WheelObject.transform.position.y), 
-                //    wheel.m_WheelObject.transform.rotation);
-                //wheel.m_WheelModel.transform.localPosition = new Vector3(0, Mathf.Clamp(offset, 0, -m_SuspensionRestDistance) + 0.2f, 0);
                 if(hit.distance < m_SuspensionRestDistance)
                     wheel.m_WheelModel.transform.localPosition = new Vector3(0, -hit.distance + (wheel.m_WheelModel.GetComponent<MeshRenderer>().bounds.size.y / 2), 0);
                 else
@@ -161,7 +181,6 @@ public class CarController : MonoBehaviour
 
                         m_CarRigidbody.AddForceAtPosition((accelDir * availableTorque) * m_Acceleration,
                             tireTransform.position);
-                        Debug.Log(m_AccelInput);
                     }
 
                     if (m_AccelInput == 0)
@@ -176,10 +195,20 @@ public class CarController : MonoBehaviour
                 }
             }
         }
+
+        if (!carGrounded)
+        {
+            Vector3 airRotation = new Vector3(-Input.GetAxisRaw("Vertical") * 10, 0, -Input.GetAxisRaw("Horizontal"));
+            m_CarRigidbody.AddRelativeTorque(airRotation * 3, ForceMode.Force);
+        }
         
         
         
-        
-        
+        if (Input.GetButton("Reset"))
+        {
+            m_CarRigidbody.velocity = Vector3.zero;
+            transform.position = m_StartTransform.position;
+            transform.rotation = m_StartTransform.rotation;
+        }
     }
 }
