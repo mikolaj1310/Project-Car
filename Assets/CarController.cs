@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -47,11 +48,15 @@ public class CarController : MonoBehaviour
     [SerializeField] [Range(0, 1)] private float m_BreakingFactor;
 
     [Header("Gearbox")] [SerializeField] private List<AnimationCurve> m_Gears;
+    private int currentGear;
+    private TMP_Text m_CurrentGearText;
 
     
     // Start is called before the first frame update
     void Start()
     {
+        m_CurrentGearText = GameObject.Find("GearNumber").GetComponent<TMP_Text>();
+        currentGear = 0;
         m_CarRigidbody = GetComponent<Rigidbody>();
         m_WheelFR.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelFR").gameObject;
         m_WheelFR.m_WheelModel = m_WheelFR.m_WheelObject.transform.Find("Model").gameObject;
@@ -94,6 +99,23 @@ public class CarController : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetButtonDown("RightBumper"))
+        {
+            if (currentGear < m_Gears.Count - 1)
+            {
+                currentGear++;
+            }
+        }
+        if (Input.GetButtonDown("LeftBumper"))
+        {
+            if (currentGear > 0)
+            {
+                currentGear--;
+            }
+        }
+        
+        m_CurrentGearText.SetText((currentGear + 1).ToString());
+        
         m_Wheels[0].m_WheelObject.transform.rotation = transform.rotation;
         m_Wheels[1].m_WheelObject.transform.rotation = transform.rotation;
        
@@ -171,17 +193,41 @@ public class CarController : MonoBehaviour
                 {
                     Vector3 accelDir = tireTransform.forward;
 
+                    float carSpeed = Vector3.Dot(transform.forward, m_CarRigidbody.velocity);
+
+                    float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(carSpeed) / m_CarTopSpeed);
+                    
                     if (m_AccelInput != 0.0f)
                     {
-                        float carSpeed = Vector3.Dot(transform.forward, m_CarRigidbody.velocity);
 
-                        float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(carSpeed) / m_CarTopSpeed);
-
-                        float availableTorque = m_PowerCurve.Evaluate(normalizedSpeed) * m_AccelInput;
+                        float availableTorque = m_Gears[currentGear].Evaluate(normalizedSpeed) * m_AccelInput;
 
                         m_CarRigidbody.AddForceAtPosition((accelDir * availableTorque) * m_Acceleration,
                             tireTransform.position);
+                        
+                        
                     }
+
+                    if (m_Gears.Count > currentGear && currentGear < m_Gears.Count - 1)
+                    {
+                        if (m_Gears[currentGear].Evaluate(normalizedSpeed)<
+                            m_Gears[currentGear + 1].Evaluate(normalizedSpeed))
+                        {
+                            currentGear++;
+                        }
+                    }
+
+                    if (currentGear != 0)
+                    {
+                        if (m_Gears[currentGear - 1].Evaluate(normalizedSpeed)>
+                            m_Gears[currentGear].Evaluate(normalizedSpeed))
+                        {
+                            currentGear--;
+                        }
+                    }
+                    
+
+
 
                     if (m_AccelInput == 0)
                     {
@@ -209,6 +255,7 @@ public class CarController : MonoBehaviour
             m_CarRigidbody.velocity = Vector3.zero;
             transform.position = m_StartTransform.position;
             transform.rotation = m_StartTransform.rotation;
+            currentGear = 0;
         }
     }
 }
