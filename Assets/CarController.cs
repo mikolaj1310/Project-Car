@@ -5,6 +5,7 @@ using Mirror;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Networking.Types;
 
 enum AccelerationType
 {
@@ -72,9 +73,6 @@ public class CarController : NetworkBehaviour
         m_CurrentGearText = GameObject.Find("GearNumber").GetComponent<TMP_Text>();
         currentGear = 0;
         
-        if (!isOwned) return;
-        GameObject.Find("Main Camera").GetComponent<CameraController>().m_Player = transform;
-        
         switch (accelerationType)
         {
             case AccelerationType.AT_AllWheelDrive:
@@ -101,6 +99,9 @@ public class CarController : NetworkBehaviour
         m_Wheels.Add(m_WheelFL);
         m_Wheels.Add(m_WheelBR);
         m_Wheels.Add(m_WheelBL);
+
+        if (!isOwned) return;
+        GameObject.Find("Main Camera").GetComponent<CameraController>().m_Player = transform;
 
         m_StartTransform = GameObject.Find("SpawnPoints").transform;
     }
@@ -147,44 +148,8 @@ public class CarController : NetworkBehaviour
         {
             UpdateCar();
         }
-        //if(isServer)
-        //    CmdUpdateCars();
     }
-
-    [Server]
-    private void CmdUpdateCars()
-    {
-        RpcUpdateCars();
-    }
-
-    [ClientRpc]
-    private void RpcUpdateCars()
-    {
-        foreach (var car in GameObject.FindGameObjectsWithTag("Player"))
-        {
-            if (car == this.gameObject)
-            {
-                foreach (var wheel in car.GetComponent<CarController>().m_Wheels)
-                {
-                    RaycastHit hit;
-                    var tireTransform = wheel.m_WheelObject.transform;
-                    wheel.m_WheelModel.transform.localPosition = new Vector3(0, m_SuspensionRestDistance + (wheel.m_WheelModel.GetComponent<MeshRenderer>().bounds.size.y / 2), 0);
-                    //if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance))
-                    //{
-                    //    if(hit.distance < m_SuspensionRestDistance)
-                    //        wheel.m_WheelModel.transform.localPosition = new Vector3(0, -hit.distance + (wheel.m_WheelModel.GetComponent<MeshRenderer>().bounds.size.y / 2), 0);
-                    //    else
-                    //    {
-                    //        wheel.m_WheelModel.transform.localPosition = new Vector3(0, m_SuspensionRestDistance + (wheel.m_WheelModel.GetComponent<MeshRenderer>().bounds.size.y / 2), 0);
-                    //    }
-                    //}
-                    Debug.Log("Happened");
-                }
-                
-            }
-        }
-    }
-
+    
     [ClientCallback]
     private void UpdateCar()
     {

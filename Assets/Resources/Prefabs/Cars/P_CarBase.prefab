@@ -997,7 +997,7 @@ MonoBehaviour:
   onlySyncOnChangeCorrectionMultiplier: 2
   rotationSensitivity: 0.01
   compressRotation: 0
-  positionPrecision: 0.01
+  positionPrecision: 0.0001
   scalePrecision: 0.01
 --- !u!1 &4712804548379793338
 GameObject:
