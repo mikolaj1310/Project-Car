@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Mirror;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -19,7 +20,7 @@ struct Wheel
     public bool m_GivePower;
 }
 
-public class CarController : MonoBehaviour
+public class CarController : NetworkBehaviour
 {
     private Rigidbody m_CarRigidbody;
     private List<Wheel> m_Wheels = new List<Wheel>();
@@ -28,7 +29,7 @@ public class CarController : MonoBehaviour
     private Wheel m_WheelBR;
     private Wheel m_WheelBL;
     private float m_AccelInput = 0f;
-    private Transform m_StartTransform;
+    public Transform m_StartTransform;
     
     [Header("Suspension")]
     [SerializeField] private float m_SuspensionRestDistance;
@@ -50,13 +51,14 @@ public class CarController : MonoBehaviour
     [Header("Gearbox")] [SerializeField] private List<AnimationCurve> m_Gears;
     private int currentGear;
     private TMP_Text m_CurrentGearText;
+    
+    //NETWORKING
 
     
     // Start is called before the first frame update
     void Start()
     {
-        m_CurrentGearText = GameObject.Find("GearNumber").GetComponent<TMP_Text>();
-        currentGear = 0;
+        
         m_CarRigidbody = GetComponent<Rigidbody>();
         m_WheelFR.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelFR").gameObject;
         m_WheelFR.m_WheelModel = m_WheelFR.m_WheelObject.transform.Find("Model").gameObject;
@@ -66,7 +68,12 @@ public class CarController : MonoBehaviour
         m_WheelBR.m_WheelModel = m_WheelBR.m_WheelObject.transform.Find("Model").gameObject;
         m_WheelBL.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelBL").gameObject;
         m_WheelBL.m_WheelModel = m_WheelBL.m_WheelObject.transform.Find("Model").gameObject;
-
+        
+        if (!isOwned) return;
+        GameObject.Find("Main Camera").GetComponent<CameraController>().m_Player = transform;
+        m_CurrentGearText = GameObject.Find("GearNumber").GetComponent<TMP_Text>();
+        currentGear = 0;
+        
         switch (accelerationType)
         {
             case AccelerationType.AT_AllWheelDrive:
@@ -94,11 +101,12 @@ public class CarController : MonoBehaviour
         m_Wheels.Add(m_WheelBR);
         m_Wheels.Add(m_WheelBL);
 
-        m_StartTransform = GameObject.Find("StartPosition").transform;
+        m_StartTransform = GameObject.Find("SpawnPoints").transform;
     }
 
     private void Update()
     {
+        if (!isOwned) return;
         if (Input.GetButtonDown("RightBumper"))
         {
             if (currentGear < m_Gears.Count - 1)
@@ -145,12 +153,56 @@ public class CarController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (isClient)
+        {
+            UpdateCar();
+        }
+        //if(isServer)
+        //    CmdUpdateCars();
+    }
+
+    [Server]
+    private void CmdUpdateCars()
+    {
+        RpcUpdateCars();
+    }
+
+    [ClientRpc]
+    private void RpcUpdateCars()
+    {
+        foreach (var car in GameObject.FindGameObjectsWithTag("Player"))
+        {
+            if (car == this.gameObject)
+            {
+                foreach (var wheel in car.GetComponent<CarController>().m_Wheels)
+                {
+                    RaycastHit hit;
+                    var tireTransform = wheel.m_WheelObject.transform;
+                    wheel.m_WheelModel.transform.localPosition = new Vector3(0, m_SuspensionRestDistance + (wheel.m_WheelModel.GetComponent<MeshRenderer>().bounds.size.y / 2), 0);
+                    //if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance))
+                    //{
+                    //    if(hit.distance < m_SuspensionRestDistance)
+                    //        wheel.m_WheelModel.transform.localPosition = new Vector3(0, -hit.distance + (wheel.m_WheelModel.GetComponent<MeshRenderer>().bounds.size.y / 2), 0);
+                    //    else
+                    //    {
+                    //        wheel.m_WheelModel.transform.localPosition = new Vector3(0, m_SuspensionRestDistance + (wheel.m_WheelModel.GetComponent<MeshRenderer>().bounds.size.y / 2), 0);
+                    //    }
+                    //}
+                    Debug.Log("Happened");
+                }
+                
+            }
+        }
+    }
+
+    [ClientCallback]
+    private void UpdateCar()
+    {
         bool carGrounded = false;
         foreach (var wheel in m_Wheels)
         {
             RaycastHit hit;
             var tireTransform = wheel.m_WheelObject.transform;
-            Vector3 rayOffset = new Vector3(0, 1, 0);
             //Suspension
             if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance))
             {
@@ -175,6 +227,7 @@ public class CarController : MonoBehaviour
             //Turning
             if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance))
             {
+                if (!isOwned) break;
                 Vector3 steeringDir = tireTransform.right;
                 Vector3 tireWorldVel = m_CarRigidbody.GetPointVelocity(tireTransform.position);
 
@@ -189,6 +242,7 @@ public class CarController : MonoBehaviour
             //Acceleration
             if (wheel.m_GivePower)
             {
+                if (!isOwned) break;
                 if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance))
                 {
                     Vector3 accelDir = tireTransform.forward;
@@ -242,6 +296,7 @@ public class CarController : MonoBehaviour
             }
         }
 
+        if (!isOwned) return;
         if (!carGrounded)
         {
             Vector3 airRotation = new Vector3(-Input.GetAxisRaw("Vertical") * 10, 0, -Input.GetAxisRaw("Horizontal"));

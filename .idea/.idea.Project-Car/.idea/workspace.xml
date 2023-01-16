@@ -11,6 +11,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Assets/CarNetworkManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/CameraController.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectId" id="2KHriEqmk2RQiXItnYH0TK0BbQ8" />
@@ -57,7 +58,7 @@
       <option name="presentableId" value="Default" />
       <updated>1673642476538</updated>
       <workItem from="1673642488513" duration="27804000" />
-      <workItem from="1673817152650" duration="3951000" />
+      <workItem from="1673817152650" duration="10397000" />
     </task>
     <servers />
   </component>

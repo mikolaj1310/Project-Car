@@ -16,8 +16,11 @@ public class CameraController : MonoBehaviour
     }
 
     void LateUpdate () {
-        m_DesiredPosition = m_Player.Find("CameraPoint").transform.position;
-        transform.position = Vector3.SmoothDamp(transform.position, m_DesiredPosition,  ref velocity, m_SmoothTime);
-        transform.LookAt(m_Player.transform.position + m_Player.transform.forward);
+        if (m_Player)
+        {
+            m_DesiredPosition = m_Player.Find("CameraPoint").transform.position;
+            transform.position = Vector3.SmoothDamp(transform.position, m_DesiredPosition, ref velocity, m_SmoothTime);
+            transform.LookAt(m_Player.transform.position + m_Player.transform.forward);
+        }
     }
 }
