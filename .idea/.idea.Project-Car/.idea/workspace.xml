@@ -11,6 +11,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4d9f144854e44b48b32b352f99ec343518600/92/36f08fcd/Physics.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/CarNetworkManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/CameraController.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -58,7 +59,7 @@
       <option name="presentableId" value="Default" />
       <updated>1673642476538</updated>
       <workItem from="1673642488513" duration="27804000" />
-      <workItem from="1673817152650" duration="16007000" />
+      <workItem from="1673817152650" duration="21898000" />
     </task>
     <servers />
   </component>

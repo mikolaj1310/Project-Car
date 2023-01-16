@@ -52,6 +52,9 @@ public class CarController : NetworkBehaviour
     [Header("Gearbox")] [SerializeField] private List<AnimationCurve> m_Gears;
     private int currentGear;
     private TMP_Text m_CurrentGearText;
+
+    [Header("Physics")] 
+    [SerializeField] private float m_GravityForce;
     
     //NETWORKING
 
@@ -147,9 +150,28 @@ public class CarController : NetworkBehaviour
         if (isClient)
         {
             UpdateCar();
+            UpdateGravity();
+        }
+
+    }
+
+    private void UpdateGravity()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, -transform.up, out hit, 2))
+        {
+            //Physics.gravity = -transform.up * m_GravityForce;
+            //m_CarRigidbody.AddForce(-transform.up * m_GravityForce);
+            
+            m_CarRigidbody.AddForce(-hit.normal * m_GravityForce);
+        }
+        else
+        {
+            m_CarRigidbody.AddForce(-Vector3.up * m_GravityForce);
+            Physics.gravity = -Vector3.up * m_GravityForce;
         }
     }
-    
+
     [ClientCallback]
     private void UpdateCar()
     {
