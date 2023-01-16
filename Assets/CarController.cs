@@ -69,10 +69,11 @@ public class CarController : NetworkBehaviour
         m_WheelBL.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelBL").gameObject;
         m_WheelBL.m_WheelModel = m_WheelBL.m_WheelObject.transform.Find("Model").gameObject;
         
-        if (!isOwned) return;
-        GameObject.Find("Main Camera").GetComponent<CameraController>().m_Player = transform;
         m_CurrentGearText = GameObject.Find("GearNumber").GetComponent<TMP_Text>();
         currentGear = 0;
+        
+        if (!isOwned) return;
+        GameObject.Find("Main Camera").GetComponent<CameraController>().m_Player = transform;
         
         switch (accelerationType)
         {
@@ -122,31 +123,20 @@ public class CarController : NetworkBehaviour
             }
         }
         
-        m_CurrentGearText.SetText((currentGear + 1).ToString());
-        
-        m_Wheels[0].m_WheelObject.transform.rotation = transform.rotation;
-        m_Wheels[1].m_WheelObject.transform.rotation = transform.rotation;
-       
-        {
-            m_Wheels[0].m_WheelObject.transform.Rotate(new Vector3(0, Input.GetAxisRaw("Horizontal") * m_TurnRadious, 0));
-            m_Wheels[1].m_WheelObject.transform.Rotate(new Vector3(0, Input.GetAxisRaw("Horizontal") * m_TurnRadious, 0));
-        }
+        float rotationSpeed = 15 * Time.deltaTime;
 
+        var inputDirection = Input.GetAxisRaw("Horizontal");
+        
+        var desiredRot = Quaternion.Euler(
+            transform.localRotation.x, 
+            inputDirection * m_TurnRadious, 
+            transform.localRotation.z);
+
+        
+        m_Wheels[0].m_WheelObject.transform.localRotation = Quaternion.Lerp(m_Wheels[0].m_WheelObject.transform.localRotation, desiredRot, rotationSpeed);
+        m_Wheels[1].m_WheelObject.transform.localRotation = Quaternion.Lerp(m_Wheels[1].m_WheelObject.transform.localRotation, desiredRot, rotationSpeed);
         
         m_AccelInput = Input.GetAxisRaw("RightTrigger");
-
-        //if (Input.GetKey(KeyCode.W))
-        //{
-        //    m_AccelInput = 1f;
-        //}
-        //else if (Input.GetKey(KeyCode.S))
-        //{
-        //    m_AccelInput = -1f;
-        //}
-        //else
-        //{
-        //    m_AccelInput = 0f;
-        //}
     }
 
 
@@ -279,9 +269,7 @@ public class CarController : NetworkBehaviour
                             currentGear--;
                         }
                     }
-                    
-
-
+                    m_CurrentGearText.SetText((currentGear + 1).ToString());
 
                     if (m_AccelInput == 0)
                     {
