@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 9018738362165826728}
   - component: {fileID: 6789711942772492639}
   - component: {fileID: 8693709772666652538}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,7 +92,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804546681803335}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: WheelBR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -123,7 +123,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804546940444179}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: CameraPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -153,7 +153,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804547009680730}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ModelPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -184,7 +184,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804547452653324}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: WheelFL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -218,7 +218,7 @@ GameObject:
   - component: {fileID: 4712804547578626105}
   - component: {fileID: 4712804547578626104}
   - component: {fileID: 4712804547578626087}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Chasis old
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -312,7 +312,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804547585487994}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: WheelFL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -343,7 +343,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804547959539518}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: WheelBL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -374,7 +374,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804547976579367}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Wheels
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -410,7 +410,7 @@ GameObject:
   - component: {fileID: 4712804548037057349}
   - component: {fileID: 4712804548037057368}
   - component: {fileID: 4712804548037057351}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -490,7 +490,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804548140127741}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: WheelBR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -521,7 +521,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804548171217868}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: WheelFR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -552,7 +552,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804548231869001}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: WheelBL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -589,7 +589,9 @@ GameObject:
   - component: {fileID: 4986957625252354728}
   - component: {fileID: 4360242967041653965}
   - component: {fileID: 4290264422266227049}
-  m_Layer: 0
+  - component: {fileID: 2272250249712869807}
+  - component: {fileID: 6913588642720858889}
+  m_Layer: 6
   m_Name: P_CarBase
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -623,7 +625,7 @@ Rigidbody:
   serializedVersion: 2
   m_Mass: 100
   m_Drag: 0
-  m_AngularDrag: 0
+  m_AngularDrag: 3
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 1
@@ -646,10 +648,10 @@ MonoBehaviour:
   syncInterval: 0.1
   m_StartTransform: {fileID: 0}
   m_SuspensionRestDistance: 0.34
-  m_SpringStrength: 9000
-  m_DampingStrength: 300
-  m_TireGripFactor: 0.1
-  m_TireMass: 15
+  m_SpringStrength: 10000
+  m_DampingStrength: 320
+  m_TireGripFactor: 0.2
+  m_TireMass: 10
   m_TurnRadious: 20
   accelerationType: 0
   m_CarTopSpeed: 20
@@ -1034,7 +1036,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
-  m_GravityForce: 900
+  m_GravityForce: 981
+  m_RoadLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!65 &4712804548334636897
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1042,12 +1047,12 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4712804548334636909}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: cc8e456a95849a041935f99ddb6ef087, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.29206228, y: 0.0794121, z: 0.76130295}
-  m_Center: {x: 0, y: 0.2284888, z: -0.072855}
+  m_Size: {x: 0.5742827, y: 0.0794121, z: 0.96466315}
+  m_Center: {x: 0, y: 0.06, z: -0.072855}
 --- !u!114 &4986957625252354728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1117,6 +1122,33 @@ MonoBehaviour:
   compressRotation: 0
   positionPrecision: 0.0001
   scalePrecision: 0.01
+--- !u!136 &2272250249712869807
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4712804548334636909}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 0
+  m_Radius: 0.04
+  m_Height: 0.58
+  m_Direction: 0
+  m_Center: {x: 0, y: 0.06, z: 0.34}
+--- !u!65 &6913588642720858889
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4712804548334636909}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Size: {x: 0.5742827, y: 0.0794121, z: 0.8942743}
+  m_Center: {x: 0, y: 0.060000002, z: -0.10804942}
 --- !u!1 &4712804548379793338
 GameObject:
   m_ObjectHideFlags: 0
@@ -1128,7 +1160,7 @@ GameObject:
   - component: {fileID: 4712804548379793339}
   - component: {fileID: 4712804548379793342}
   - component: {fileID: 4712804548379793341}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1210,7 +1242,7 @@ GameObject:
   - component: {fileID: 4712804548428637714}
   - component: {fileID: 4712804548428637717}
   - component: {fileID: 4712804548428637716}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1292,7 +1324,7 @@ GameObject:
   - component: {fileID: 4712804548442116752}
   - component: {fileID: 4712804548442116755}
   - component: {fileID: 4712804548442116754}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1372,7 +1404,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804548673743519}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: WheelFR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1403,7 +1435,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4712804548679621037}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Wheels
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1439,7 +1471,7 @@ GameObject:
   - component: {fileID: 5037655313064254476}
   - component: {fileID: 5801535732337099989}
   - component: {fileID: 2163175922761761679}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1523,7 +1555,7 @@ GameObject:
   - component: {fileID: 8861969844027751999}
   - component: {fileID: 387045759730008669}
   - component: {fileID: 2951037925614813331}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1604,7 +1636,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7839630899354148568}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Chasis
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1638,7 +1670,7 @@ GameObject:
   - component: {fileID: 1649027441845139373}
   - component: {fileID: 8689978883520245908}
   - component: {fileID: 8148593810931923483}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1721,7 +1753,7 @@ GameObject:
   - component: {fileID: 8976826768618626381}
   - component: {fileID: 6222044521573024056}
   - component: {fileID: 5101827800275554335}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}

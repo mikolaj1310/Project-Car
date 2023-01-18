@@ -55,6 +55,8 @@ public class CarController : NetworkBehaviour
 
     [Header("Physics")] 
     [SerializeField] private float m_GravityForce;
+    private Vector3 m_LastGravityDirection;
+    [SerializeField] private LayerMask m_RoadLayer;
     
     //NETWORKING
 
@@ -102,15 +104,18 @@ public class CarController : NetworkBehaviour
         m_Wheels.Add(m_WheelFL);
         m_Wheels.Add(m_WheelBR);
         m_Wheels.Add(m_WheelBL);
+        
 
         if (!isOwned) return;
         GameObject.Find("Main Camera").GetComponent<CameraController>().m_Player = transform;
 
         m_StartTransform = GameObject.Find("SpawnPoints").transform;
+        m_LastGravityDirection = -m_StartTransform.up;
     }
 
     private void Update()
     {
+        
         if (!isOwned) return;
         if (Input.GetButtonDown("RightBumper"))
         {
@@ -158,18 +163,18 @@ public class CarController : NetworkBehaviour
     private void UpdateGravity()
     {
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, -transform.up, out hit, 2))
+        Vector3 offset = transform.up;
+        if (Physics.Raycast(transform.position, -transform.up, out hit, 2, m_RoadLayer))
         {
-            //Physics.gravity = -transform.up * m_GravityForce;
-            //m_CarRigidbody.AddForce(-transform.up * m_GravityForce);
-            
             m_CarRigidbody.AddForce(-hit.normal * m_GravityForce);
+            m_LastGravityDirection = -hit.normal;
         }
         else
         {
-            m_CarRigidbody.AddForce(-Vector3.up * m_GravityForce);
-            Physics.gravity = -Vector3.up * m_GravityForce;
+            //m_CarRigidbody.AddForce(-Vector3.up * m_GravityForce);
+            m_CarRigidbody.AddForce(m_LastGravityDirection * m_GravityForce);
         }
+        Debug.DrawLine(transform.position, transform.position + (-transform.up * 2));
     }
 
     [ClientCallback]
@@ -181,7 +186,7 @@ public class CarController : NetworkBehaviour
             RaycastHit hit;
             var tireTransform = wheel.m_WheelObject.transform;
             //Suspension
-            if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance))
+            if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance, m_RoadLayer))
             {
                 carGrounded = true;
                 Vector3 springDir = tireTransform.up;
@@ -292,6 +297,7 @@ public class CarController : NetworkBehaviour
             m_CarRigidbody.angularVelocity = Vector3.zero;
             transform.rotation = m_StartTransform.rotation;
             currentGear = 0;
+            m_LastGravityDirection = -m_StartTransform.up;
         }
     }
 }
