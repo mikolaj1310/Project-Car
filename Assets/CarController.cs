@@ -55,7 +55,7 @@ public class CarController : NetworkBehaviour
 
     [Header("Physics")] 
     [SerializeField] private float m_GravityForce;
-    private Vector3 m_LastGravityDirection;
+    public Vector3 m_LastGravityDirection { get; private set; }
     [SerializeField] private LayerMask m_RoadLayer;
     
     //NETWORKING
@@ -164,7 +164,7 @@ public class CarController : NetworkBehaviour
     {
         RaycastHit hit;
         Vector3 offset = transform.up;
-        if (Physics.Raycast(transform.position, -transform.up, out hit, 2, m_RoadLayer))
+        if (Physics.Raycast(transform.position, -transform.up, out hit, 1, m_RoadLayer))
         {
             m_CarRigidbody.AddForce(-hit.normal * m_GravityForce);
             m_LastGravityDirection = -hit.normal;
@@ -207,7 +207,7 @@ public class CarController : NetworkBehaviour
             }
             
             //Turning
-            if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance))
+            if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance, m_RoadLayer))
             {
                 if (!isOwned) break;
                 Vector3 steeringDir = tireTransform.right;
@@ -225,7 +225,7 @@ public class CarController : NetworkBehaviour
             if (wheel.m_GivePower)
             {
                 if (!isOwned) break;
-                if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance))
+                if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance, m_RoadLayer))
                 {
                     Vector3 accelDir = tireTransform.forward;
 
@@ -284,8 +284,8 @@ public class CarController : NetworkBehaviour
         if (!isOwned) return;
         if (!carGrounded)
         {
-            Vector3 airRotation = new Vector3(-Input.GetAxisRaw("Vertical") * 10, 0, -Input.GetAxisRaw("Horizontal"));
-            m_CarRigidbody.AddRelativeTorque(airRotation * 3, ForceMode.Force);
+            Vector3 airRotation = new Vector3(-Input.GetAxisRaw("Vertical") * 10000, 0, -Input.GetAxisRaw("Horizontal") * 1000);
+            m_CarRigidbody.AddRelativeTorque(airRotation * Time.fixedDeltaTime, ForceMode.Force);
         }
         
         
