@@ -239,25 +239,7 @@ public class CarController : NetworkBehaviour
                         
                     }
 
-                    if (m_Gears.Count > currentGear && currentGear < m_Gears.Count - 1)
-                    {
-                        if (m_Gears[currentGear].Evaluate(normalizedSpeed)<
-                            m_Gears[currentGear + 1].Evaluate(normalizedSpeed))
-                        {
-                            currentGear++;
-                        }
-                    }
-
-                    if (currentGear != 0)
-                    {
-                        if (m_Gears[currentGear - 1].Evaluate(normalizedSpeed)>
-                            m_Gears[currentGear].Evaluate(normalizedSpeed))
-                        {
-                            currentGear--;
-                        }
-                    }
-                    m_CurrentGearText.SetText((currentGear + 1).ToString());
-
+                    
                     if (m_AccelInput == 0)
                     {
                         Vector3 tireWorldVel = m_CarRigidbody.GetPointVelocity(tireTransform.position);
@@ -270,6 +252,29 @@ public class CarController : NetworkBehaviour
                 }
             }
         }
+        
+
+        float normalizedCarSpeed = Mathf.Clamp01(Mathf.Abs(Vector3.Dot(transform.forward, m_CarRigidbody.velocity)) / m_CarTopSpeed);
+        
+        if (m_Gears.Count > currentGear && currentGear < m_Gears.Count - 1)
+        {
+            if (m_Gears[currentGear].Evaluate(normalizedCarSpeed)<
+                m_Gears[currentGear + 1].Evaluate(normalizedCarSpeed))
+            {
+                currentGear++;
+            }
+        }
+
+        if (currentGear != 0)
+        {
+            if (m_Gears[currentGear - 1].Evaluate(normalizedCarSpeed)>
+                m_Gears[currentGear].Evaluate(normalizedCarSpeed))
+            {
+                currentGear--;
+            }
+        }
+        m_CurrentGearText.SetText((currentGear + 1).ToString());
+
 
         if (!isOwned) return;
         if (!carGrounded)
@@ -284,6 +289,7 @@ public class CarController : NetworkBehaviour
         {
             m_CarRigidbody.velocity = Vector3.zero;
             transform.position = m_StartTransform.position;
+            m_CarRigidbody.angularVelocity = Vector3.zero;
             transform.rotation = m_StartTransform.rotation;
             currentGear = 0;
         }
