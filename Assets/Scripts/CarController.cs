@@ -60,11 +60,15 @@ public class CarController : NetworkBehaviour
     
     //NETWORKING
 
-    
+
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        
         m_CarRigidbody = GetComponent<Rigidbody>();
         m_WheelFR.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelFR").gameObject;
         m_WheelFR.m_WheelModel = m_WheelFR.m_WheelObject.transform.Find("Model").gameObject;
@@ -75,7 +79,9 @@ public class CarController : NetworkBehaviour
         m_WheelBL.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelBL").gameObject;
         m_WheelBL.m_WheelModel = m_WheelBL.m_WheelObject.transform.Find("Model").gameObject;
         
-        m_CurrentGearText = GameObject.Find("GearNumber").GetComponent<TMP_Text>();
+        if(m_CurrentGearText)
+            m_CurrentGearText = GameObject.Find("GearNumber").GetComponent<TMP_Text>();
+        
         currentGear = 0;
         
         switch (accelerationType)
@@ -104,19 +110,16 @@ public class CarController : NetworkBehaviour
         m_Wheels.Add(m_WheelFL);
         m_Wheels.Add(m_WheelBR);
         m_Wheels.Add(m_WheelBL);
-        
-
-        if (!isOwned) return;
-        GameObject.Find("Main Camera").GetComponent<CameraController>().m_Player = transform;
-
-        m_StartTransform = GameObject.Find("SpawnPoints").transform;
-        m_LastGravityDirection = -m_StartTransform.up;
     }
 
     private void Update()
     {
-        
         if (!isOwned) return;
+
+        if (GameObject.Find("Main Camera"))
+        {
+            GameObject.Find("Main Camera").GetComponent<CameraController>().m_Player = transform;
+        }
         if (Input.GetButtonDown("RightBumper"))
         {
             if (currentGear < m_Gears.Count - 1)
@@ -141,12 +144,19 @@ public class CarController : NetworkBehaviour
             inputDirection * m_TurnRadious, 
             transform.localRotation.z);
 
-        
-        m_Wheels[0].m_WheelObject.transform.localRotation = Quaternion.Lerp(m_Wheels[0].m_WheelObject.transform.localRotation, desiredRot, rotationSpeed);
-        m_Wheels[1].m_WheelObject.transform.localRotation = Quaternion.Lerp(m_Wheels[1].m_WheelObject.transform.localRotation, desiredRot, rotationSpeed);
-        
+
+        if (m_Wheels.Count > 0)
+        {
+            m_Wheels[0].m_WheelObject.transform.localRotation =
+                Quaternion.Lerp(m_Wheels[0].m_WheelObject.transform.localRotation, desiredRot, rotationSpeed);
+            m_Wheels[1].m_WheelObject.transform.localRotation =
+                Quaternion.Lerp(m_Wheels[1].m_WheelObject.transform.localRotation, desiredRot, rotationSpeed);
+        }
+
         m_AccelInput = Input.GetAxisRaw("RightTrigger");
     }
+    
+    
 
 
     // Update is called once per frame
@@ -278,7 +288,9 @@ public class CarController : NetworkBehaviour
                 currentGear--;
             }
         }
-        m_CurrentGearText.SetText((currentGear + 1).ToString());
+        
+        if(m_CurrentGearText)
+            m_CurrentGearText.SetText((currentGear + 1).ToString());
 
 
         if (!isOwned) return;
@@ -292,12 +304,19 @@ public class CarController : NetworkBehaviour
         
         if (Input.GetButton("Reset"))
         {
-            m_CarRigidbody.velocity = Vector3.zero;
-            transform.position = m_StartTransform.position;
-            m_CarRigidbody.angularVelocity = Vector3.zero;
-            transform.rotation = m_StartTransform.rotation;
-            currentGear = 0;
-            m_LastGravityDirection = -m_StartTransform.up;
+            if (m_StartTransform)
+            {
+                m_CarRigidbody.velocity = Vector3.zero;
+                transform.position = m_StartTransform.position;
+                m_CarRigidbody.angularVelocity = Vector3.zero;
+                transform.rotation = m_StartTransform.rotation;
+                currentGear = 0;
+                m_LastGravityDirection = -m_StartTransform.up;
+            }
+            else
+            {
+                m_StartTransform = GameObject.Find("SpawnPoints").transform;
+            }
         }
     }
 }

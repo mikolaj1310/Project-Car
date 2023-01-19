@@ -41,7 +41,7 @@ namespace Mirror
         /// <summary>
         /// Do not use Start - Override OnStartHost / OnStartClient instead!
         /// </summary>
-        public void Start()
+        public virtual void Start()
         {
             if (NetworkManager.singleton is NetworkRoomManager room)
             {
@@ -59,6 +59,7 @@ namespace Mirror
                 if (NetworkClient.active)
                     room.CallOnClientEnterRoom();
             }
+            
             else Debug.LogError("RoomPlayer could not find a NetworkRoomManager. The RoomPlayer requires a NetworkRoomManager object to function. Make sure that there is one in the scene.");
         }
 
