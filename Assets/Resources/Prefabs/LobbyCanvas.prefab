@@ -238,7 +238,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0.1
-  showRoomGUI: 1
+  showRoomGUI: 0
   readyToBegin: 0
   index: 0
   m_ReadyButtonTick: {fileID: 0}

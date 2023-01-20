@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking.Types;
+using UnityEngine.UI;
 
 enum AccelerationType
 {
@@ -48,6 +49,8 @@ public class CarController : NetworkBehaviour
     [SerializeField] private float m_Acceleration;
     [SerializeField] private AnimationCurve m_PowerCurve;
     [SerializeField] [Range(0, 1)] private float m_BreakingFactor;
+    [SerializeField] [Range(0, 1)] private float m_IdleBreakingFactor;
+    private float m_BreakInput;
 
     [Header("Gearbox")] [SerializeField] private List<AnimationCurve> m_Gears;
     private int currentGear;
@@ -78,10 +81,7 @@ public class CarController : NetworkBehaviour
         m_WheelBR.m_WheelModel = m_WheelBR.m_WheelObject.transform.Find("Model").gameObject;
         m_WheelBL.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelBL").gameObject;
         m_WheelBL.m_WheelModel = m_WheelBL.m_WheelObject.transform.Find("Model").gameObject;
-        
-        if(m_CurrentGearText)
-            m_CurrentGearText = GameObject.Find("GearNumber").GetComponent<TMP_Text>();
-        
+
         currentGear = 0;
         
         switch (accelerationType)
@@ -134,14 +134,27 @@ public class CarController : NetworkBehaviour
                 currentGear--;
             }
         }
+
+        if (Input.GetButton("Break"))
+        {
+            m_BreakInput = 1f;
+        }
+        else
+        {
+            m_BreakInput = 0f;
+        }
         
         float rotationSpeed = 15 * Time.deltaTime;
 
         var inputDirection = Input.GetAxisRaw("Horizontal");
         
+        float carSpeed = Vector3.Dot(transform.forward, m_CarRigidbody.velocity);
+        float normalizedSpeed = Mathf.Clamp01(Mathf.Abs(carSpeed) / m_CarTopSpeed);
+        float desiredTurnRadious = m_TurnRadious * (1f - (normalizedSpeed / 2f));
+        
         var desiredRot = Quaternion.Euler(
             transform.localRotation.x, 
-            inputDirection * m_TurnRadious, 
+            inputDirection * desiredTurnRadious, 
             transform.localRotation.z);
 
 
@@ -162,6 +175,8 @@ public class CarController : NetworkBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if(!m_CurrentGearText && GameObject.Find("GearNumber"))
+            m_CurrentGearText = GameObject.Find("GearNumber").GetComponent<TMP_Text>();
         if (isClient)
         {
             UpdateCar();
@@ -258,12 +273,27 @@ public class CarController : NetworkBehaviour
                     if (m_AccelInput == 0)
                     {
                         Vector3 tireWorldVel = m_CarRigidbody.GetPointVelocity(tireTransform.position);
-                        float desiredVelChange = Vector3.Dot(accelDir, tireWorldVel) * -m_BreakingFactor;
+                        float desiredVelChange = Vector3.Dot(accelDir, tireWorldVel) * -m_IdleBreakingFactor;
                         float desiredAccel = desiredVelChange / Time.fixedDeltaTime;
                         
                         m_CarRigidbody.AddForceAtPosition((accelDir * desiredVelChange) * m_Acceleration,
                             tireTransform.position);
                     }
+                }
+            }
+
+            if (m_BreakInput != 0)
+            {
+                
+                if (m_AccelInput == 0)
+                {
+                    Vector3 accelDir = tireTransform.forward;
+                    Vector3 tireWorldVel = m_CarRigidbody.GetPointVelocity(tireTransform.position);
+                    float desiredVelChange = Vector3.Dot(accelDir, tireWorldVel) * -m_BreakingFactor;
+                    float desiredAccel = desiredVelChange / Time.fixedDeltaTime;
+                        
+                    m_CarRigidbody.AddForceAtPosition((accelDir * desiredVelChange) * m_Acceleration,
+                        tireTransform.position);
                 }
             }
         }

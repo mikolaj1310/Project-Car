@@ -4314,6 +4314,10 @@ PrefabInstance:
       value: Assets/Scenes/MenuScene.unity
       objectReference: {fileID: 0}
     - target: {fileID: 3163055751762060229, guid: 2b39d45a93c28204cbb2396f299c49ed, type: 3}
+      propertyPath: showRoomGUI
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3163055751762060229, guid: 2b39d45a93c28204cbb2396f299c49ed, type: 3}
       propertyPath: playerPrefab
       value: 
       objectReference: {fileID: 9175836738629119144, guid: d7306162e48ec744696bb756f07b527a, type: 3}

@@ -663,8 +663,8 @@ MonoBehaviour:
   m_SpringStrength: 11000
   m_DampingStrength: 320
   m_TireGripFactor: 0.12
-  m_TireMass: 20
-  m_TurnRadious: 20
+  m_TireMass: 25
+  m_TurnRadious: 25
   accelerationType: 0
   m_CarTopSpeed: 25
   m_Acceleration: 140
@@ -710,7 +710,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_BreakingFactor: 0.056
+  m_BreakingFactor: 0.2
+  m_IdleBreakingFactor: 0.1
   m_Gears:
   - serializedVersion: 2
     m_Curve:
