@@ -70,7 +70,7 @@ public class CarNetworkManager : NetworkRoomManager
 	{
 		if(SceneManager.GetActiveScene().name != "MenuScene") return;
 		Debug.Log("Game started");
-		ReplacePlayer(Resources.Load("Prefabs/Cars/P_CarBase") as GameObject);
+		ReplacePlayer(Resources.Load("Prefabs/Cars/P_CarNew") as GameObject);
 	}
 
 	public override void OnClientSceneChanged()

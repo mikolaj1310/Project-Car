@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Mirror;
 using TMPro;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking.Types;
@@ -19,6 +20,7 @@ struct Wheel
 {
     public GameObject m_WheelObject;
     public GameObject m_WheelModel;
+    public ParticleSystem m_BurnoutParticleSystem;
     public bool m_GivePower;
 }
 
@@ -60,6 +62,9 @@ public class CarController : NetworkBehaviour
     [SerializeField] private float m_GravityForce;
     public Vector3 m_LastGravityDirection { get; private set; }
     [SerializeField] private LayerMask m_RoadLayer;
+
+    [Header("Particles")] 
+    [SerializeField] private float m_BurnoutAngle;
     
     //NETWORKING
 
@@ -75,12 +80,21 @@ public class CarController : NetworkBehaviour
         m_CarRigidbody = GetComponent<Rigidbody>();
         m_WheelFR.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelFR").gameObject;
         m_WheelFR.m_WheelModel = m_WheelFR.m_WheelObject.transform.Find("Model").gameObject;
+        m_WheelFR.m_BurnoutParticleSystem = null;
+
         m_WheelFL.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelFL").gameObject;
         m_WheelFL.m_WheelModel = m_WheelFL.m_WheelObject.transform.Find("Model").gameObject;
+        m_WheelFL.m_BurnoutParticleSystem = null;
+        
         m_WheelBR.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelBR").gameObject;
         m_WheelBR.m_WheelModel = m_WheelBR.m_WheelObject.transform.Find("Model").gameObject;
+        m_WheelBR.m_BurnoutParticleSystem = m_WheelBR.m_WheelObject.transform.GetComponentInChildren<ParticleSystem>();
+        m_WheelBR.m_BurnoutParticleSystem.Stop();
+        
         m_WheelBL.m_WheelObject = transform.Find("Chasis").Find("Wheels").Find("WheelBL").gameObject;
         m_WheelBL.m_WheelModel = m_WheelBL.m_WheelObject.transform.Find("Model").gameObject;
+        m_WheelBL.m_BurnoutParticleSystem = m_WheelBL.m_WheelObject.transform.GetComponentInChildren<ParticleSystem>();
+        m_WheelBL.m_BurnoutParticleSystem.Stop();
 
         currentGear = 0;
         
@@ -110,6 +124,8 @@ public class CarController : NetworkBehaviour
         m_Wheels.Add(m_WheelFL);
         m_Wheels.Add(m_WheelBR);
         m_Wheels.Add(m_WheelBL);
+
+        Physics.gravity = Vector3.zero;
     }
 
     private void Update()
@@ -169,10 +185,6 @@ public class CarController : NetworkBehaviour
         m_AccelInput = Input.GetAxisRaw("RightTrigger");
     }
     
-    
-
-
-    // Update is called once per frame
     void FixedUpdate()
     {
         if(!m_CurrentGearText && GameObject.Find("GearNumber"))
@@ -188,7 +200,6 @@ public class CarController : NetworkBehaviour
     private void UpdateGravity()
     {
         RaycastHit hit;
-        Vector3 offset = transform.up;
         if (Physics.Raycast(transform.position, -transform.up, out hit, 1, m_RoadLayer))
         {
             m_CarRigidbody.AddForce(-hit.normal * m_GravityForce);
@@ -199,7 +210,8 @@ public class CarController : NetworkBehaviour
             //m_CarRigidbody.AddForce(-Vector3.up * m_GravityForce);
             m_CarRigidbody.AddForce(m_LastGravityDirection * m_GravityForce);
         }
-        Debug.DrawLine(transform.position, transform.position + (-transform.up * 2));
+        
+        
     }
 
     [ClientCallback]
@@ -287,15 +299,43 @@ public class CarController : NetworkBehaviour
                 
                 if (m_AccelInput == 0)
                 {
-                    Vector3 accelDir = tireTransform.forward;
-                    Vector3 tireWorldVel = m_CarRigidbody.GetPointVelocity(tireTransform.position);
-                    float desiredVelChange = Vector3.Dot(accelDir, tireWorldVel) * -m_BreakingFactor;
-                    float desiredAccel = desiredVelChange / Time.fixedDeltaTime;
-                        
-                    m_CarRigidbody.AddForceAtPosition((accelDir * desiredVelChange) * m_Acceleration,
-                        tireTransform.position);
+                    if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance,
+                        m_RoadLayer))
+                    {
+                        Vector3 accelDir = tireTransform.forward;
+                        Vector3 tireWorldVel = m_CarRigidbody.GetPointVelocity(tireTransform.position);
+                        float desiredVelChange = Vector3.Dot(accelDir, tireWorldVel) * -m_BreakingFactor;
+                        float desiredAccel = desiredVelChange / Time.fixedDeltaTime;
+
+                        m_CarRigidbody.AddForceAtPosition((accelDir * desiredVelChange) * m_Acceleration,
+                            tireTransform.position);
+                    }
                 }
             }
+
+            if (wheel.m_BurnoutParticleSystem)
+            {
+                if (Physics.Raycast(tireTransform.position, -tireTransform.up, out hit, m_SuspensionRestDistance + 0.1f,
+                    m_RoadLayer))
+                {
+                    //calculation for drift particle
+                    var n = m_LastGravityDirection;
+                    var v = m_CarRigidbody.velocity;
+
+                    float d = Vector3.Dot(v, n);
+                    if (d > 0f) v -= n * d;
+
+                    float angle = Vector3.Angle(v, transform.forward);
+
+                    if (angle > m_BurnoutAngle)
+                        wheel.m_BurnoutParticleSystem.Play();
+                    else
+                        wheel.m_BurnoutParticleSystem.Stop();
+                }
+                else
+                    wheel.m_BurnoutParticleSystem.Stop();
+            }
+
         }
         
 
@@ -318,7 +358,9 @@ public class CarController : NetworkBehaviour
                 currentGear--;
             }
         }
+
         
+
         if(m_CurrentGearText)
             m_CurrentGearText.SetText((currentGear + 1).ToString());
 
@@ -342,6 +384,13 @@ public class CarController : NetworkBehaviour
                 transform.rotation = m_StartTransform.rotation;
                 currentGear = 0;
                 m_LastGravityDirection = -m_StartTransform.up;
+                foreach (var wheel in m_Wheels)
+                {
+                    if (wheel.m_BurnoutParticleSystem)
+                    {
+                        wheel.m_BurnoutParticleSystem.Stop();
+                    }
+                }
             }
             else
             {
